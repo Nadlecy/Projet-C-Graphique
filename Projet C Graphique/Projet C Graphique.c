@@ -428,12 +428,73 @@ int playAgain() {
 
 }
 
+//VISUAL FUNCTIONS
+//difficulty/intro window
+int * startScreen()
+{
+	SDL_Window* startWin = SDL_CreateWindow("MineSweeper", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 500, 300, 0);
+	SDL_Renderer* startRender = SDL_CreateRenderer(startWin,-1, 0);
+	if (startRender) {
+		SDL_SetRenderDrawColor(startRender, 0, 128, 128, 255);
+		SDL_RenderClear(startRender);
+		printf("Renderer created!\n");
+		isRunning = true;
+	}
+
+	int gameValues[3];
+	for (int i = 0; i < 3; i++)
+	{
+		gameValues[i] = 10;
+	}
+
+	SDL_Rect startRects[1];
+	for (int i = 0; i < 6; i++)
+	{
+		if (i % 2)
+		{
+			switch (i)
+			{
+			case 1:
+				SDL_SetRenderDrawColor(startRender, 195, 195, 195, 255);
+				break;
+			case 3:
+				SDL_SetRenderDrawColor(startRender, 0, 255, 0, 255);
+				break;
+			case 5:
+				SDL_SetRenderDrawColor(startRender, 121, 0, 0, 255);
+				break;
+			}
+			startRects[0].h = 70;
+			startRects[0].x = 40 + (i - 1) / 2  * 175;
+			startRects[0].y = 70;
+
+		}
+		else 
+		{
+			SDL_SetRenderDrawColor(startRender, 129, 129, 129, 255);
+			startRects[0].h = 130;
+			startRects[0].y = 40;
+			startRects[0].x = 40 + i/2 * 175;
+		}
+		startRects[0].w = 70;
+		SDL_RenderFillRect(startRender, startRects);
+	}
+
+	SDL_RenderPresent(startRender);
+	SDL_Delay(8000);//8 seconds
+
+	SDL_DestroyWindow(startWin);
+	SDL_DestroyRenderer(startRender);
+}
+
+
 //main operating function, runs the whole program
 int main() {
 
 	int playing = 1;
 	while (playing)
 	{
+		startScreen();
 		//setting the grid size
 		int xSize = numQuery("column amount", "set your grid width at", 48);
 		int ySize = numQuery("line amount", "set your grid height at", 48);
@@ -450,7 +511,7 @@ int main() {
 		bombRadar(tab, &rules);
 
 		//game window creation
-		fullscreen = false;
+		/*fullscreen = false;
 		int flags = 0;
 		flags = SDL_WINDOW_RESIZABLE;
 		if (fullscreen) {
@@ -478,7 +539,7 @@ int main() {
 			handleEvents();
 			update();
 			render();
-		}
+		}*/
 
 		//frees memory associated with renderer and window
 		SDL_DestroyRenderer(renderer);
