@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Fichiers sources\font">
+      <UniqueIdentifier>{a03f2038-2f88-4def-af4b-7ac2bfe54015}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Projet C Graphique.c">
@@ -44,7 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Font Include="comic-sans-ms_fr.ttf">
-      <Filter>Fichiers sources</Filter>
+      <Filter>Fichiers sources\font</Filter>
     </Font>
   </ItemGroup>
 </Project>
