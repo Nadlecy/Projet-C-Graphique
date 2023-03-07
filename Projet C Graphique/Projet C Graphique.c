@@ -1,6 +1,6 @@
 #include "SDL.h"
 #include "SDL_image.h"
-#include "SDL_ttf.h"
+//#include "SDL_ttf.h"
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
@@ -493,10 +493,10 @@ int * startScreen()
 		startRects[0].w = 70;
 		SDL_RenderFillRect(startRender, startRects);
 	}
-	TTF_Init();
-	TTF_Font* font = NULL;
-	font = TTF_OpenFont("comic-sans-ms_fr.ttf", 12);
-
+	//TTF_Init();
+	//TTF_Font* font = NULL;
+	//font = TTF_OpenFont("comic-sans-ms_fr.ttf", 12);
+	/*
 	if (font != 0) {
 		SDL_Color noir = { 0, 0, 0, 255 }; //attention ce n'est pas un Uint32
 		SDL_Surface* texte = TTF_RenderText_Blended(font, "coucou", noir);
@@ -509,7 +509,7 @@ int * startScreen()
 		printf("foirage à l'ouverture de times.ttf");
 	}
 
-	TTF_Quit();
+	TTF_Quit();*/
 	SDL_RenderPresent(startRender);
 	/*
 	while (isRunning)
@@ -521,7 +521,7 @@ int * startScreen()
 			//break window, renderer and return values
 	}
 */
-
+	SDL_Delay(8000);
 	SDL_DestroyWindow(startWin);
 	SDL_DestroyRenderer(startRender);
 	return gameValues;
