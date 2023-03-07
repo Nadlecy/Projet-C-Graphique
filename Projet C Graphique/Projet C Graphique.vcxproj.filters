@@ -19,4 +19,37 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="arrHor.png">
+      <Filter>Fichiers sources</Filter>
+    </Image>
+    <Image Include="arrVert.png">
+      <Filter>Fichiers sources</Filter>
+    </Image>
+    <Image Include="bomb.png">
+      <Filter>Fichiers sources</Filter>
+    </Image>
+    <Image Include="darkGrass.jpg">
+      <Filter>Fichiers sources</Filter>
+    </Image>
+    <Image Include="grass.jpg">
+      <Filter>Fichiers sources</Filter>
+    </Image>
+    <Image Include="flag.jpg">
+      <Filter>Fichiers sources</Filter>
+    </Image>
+    <Image Include="question.jpg">
+      <Filter>Fichiers sources</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="comic-sans-ms_fr.ttf">
+      <Filter>Fichiers sources</Filter>
+    </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SDL_ttf.h">
+      <Filter>Fichiers sources</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
