@@ -8,16 +8,7 @@
 typedef int bool;
 #define true 1
 #define false 0
-
-
-//don't do this, this is just an example
-SDL_Renderer* renderer;
-SDL_Window* window;
 bool isRunning;
-bool fullscreen;
-void handleEvents();
-void update();
-void render();
 
 struct box
 {
@@ -175,7 +166,7 @@ void bombRadar(struct box* tab, struct gameSettings* rules)
 void dig(struct box* tab, int X, int Y, struct gameSettings* rules)
 {
 	// ckeck if there is a flag already placed or not on the tile
-	if (X > 0 && X < rules->height + 1 && Y>0 && Y < rules->width + 1 && tab[X - 1 + rules->width * (Y - 1)].content != 'P')
+	if (X > 0 && X < rules->height + 1 && Y>0 && Y < rules->width + 1 && tab[X - 1 + rules->width * (Y - 1)].content != "flag.jpg")
 	{
 		//if there is a bomb on the tile
 		if (tab[X - 1 + rules->width * (Y - 1)].isBomb)
@@ -185,15 +176,15 @@ void dig(struct box* tab, int X, int Y, struct gameSettings* rules)
 
 		}
 		//if the tile has not yet been revealed
-		else if (tab[X - 1 + rules->width * (Y - 1)].content == ' ')
+		else if (tab[X - 1 + rules->width * (Y - 1)].content == "darkGrass.jpg")
 		{
 			//if there is one (or more) bomb(s) near the tile 
 			if ((tab[X - 1 + rules->width * (Y - 1)].nearbyBombs))
 			{
-				char newDisplay[2];
+				char newDisplay[14];
 				//transforms the nearbyBombs pointer (int) into a string 
-				sprintf_s(newDisplay, 2, "%d", tab[X - 1 + rules->width * (Y - 1)].nearbyBombs);
-				tab[X - 1 + rules->width * (Y - 1)].content = newDisplay[0];
+				sprintf_s(newDisplay, 14, "nearBomb%d.jpg", tab[X - 1 + rules->width * (Y - 1)].nearbyBombs);
+				tab[X - 1 + rules->width * (Y - 1)].content = newDisplay;
 				//removes a number from the unopened boxes, because we just opened one
 				rules->unopenedBoxes--;
 			}
@@ -253,9 +244,76 @@ void flag(struct box* tab, int X, int Y, struct gameSettings* rules)
 
 //VISUAL FUNCTION
 //gives a visual representation of the minefield
-void displayGrid(struct box* tab, struct gameSettings* rules, int endDisplay)
+void displayGrid(struct box* tab, struct gameSettings* rules,SDL_Renderer* renderer, int endDisplay)
 {
-	printf("\n");
+
+	//Makes a basic play area/info bar
+	SDL_Rect position;
+	SDL_Surface* image;
+	for (int i = 0; i < rules->height * rules->width; i++)
+	{
+		//if the game has ended and the box contains a mine, reveal the mine
+		if (tab[i].isBomb && endDisplay)
+		{
+			image = IMG_Load("bomb.jpg");
+		}
+		else
+		{
+			image = IMG_Load(tab[i].content);
+		}
+		SDL_Texture* readyImage = SDL_CreateTextureFromSurface(renderer, image);
+		position.x = (i % rules->width) * 32 + 16 ;//the horizontal position
+		position.y = ((i - (i % rules->width)) / rules->height) * 32 + 16; //the vertical position
+		SDL_QueryTexture(readyImage, NULL, NULL, &position.w, &position.h);
+		SDL_RenderCopy(renderer, readyImage, NULL, &position);
+	}
+
+	SDL_Rect flagInfo;
+	flagInfo.x = 16;
+	flagInfo.y = rules->height * 32 + 32;
+	image = IMG_Load("flag.jpg");
+	SDL_Texture* readyImage = SDL_CreateTextureFromSurface(renderer, image);
+	SDL_QueryTexture(readyImage, NULL, NULL, &flagInfo.w, &flagInfo.h);
+	SDL_RenderCopy(renderer, readyImage, NULL, &flagInfo);
+	SDL_Rect flagTextInfo;
+	flagTextInfo.x = flagInfo.w + 16;
+	flagTextInfo.y = flagInfo.y; 
+	char newDisplay[25];
+	//transforms the nearbyBombs pointer (int) into a string 
+	sprintf_s(newDisplay, 25, "Flags left to place : %d", rules->flags);
+	printf(newDisplay);
+	char* text = newDisplay;
+	TTF_Init();
+	TTF_Font* font = NULL;
+	font = TTF_OpenFont("font/comic-sans-ms_fr.ttf", 12);
+
+	if (font != 0) {
+		SDL_Color noir = { 0, 0, 0 }; //attention ce n'est pas un Uint32
+		SDL_Surface* textSurf = TTF_RenderText_Blended(font, text, noir);
+
+
+		if (textSurf == NULL) {
+			printf("Ton texte il est NULL mec.");
+			TTF_CloseFont(font);
+			TTF_Quit();
+		}
+
+		SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, textSurf);
+		if (texture == NULL) {
+			printf("Ta texture elle est NULL mec.");
+			TTF_CloseFont(font);
+			TTF_Quit();
+		}
+		SDL_QueryTexture(texture, NULL, NULL, &flagTextInfo.w, &flagTextInfo.h);
+		SDL_RenderCopy(renderer, texture, NULL, &flagTextInfo);
+		
+		printf("\n");
+	}
+	else 
+	{
+		printf("mange tes morts mek.");
+	}
+	/*
 	//puts a number indicator for each column
 	for (int o = 0; o < rules->width + 1; o++)
 	{
@@ -287,7 +345,7 @@ void displayGrid(struct box* tab, struct gameSettings* rules, int endDisplay)
 			//if the game has ended and the box contains a mine, reveal the mine as an X
 			if (tab[i * rules->height + u].isBomb && endDisplay)
 			{
-				tab[i * rules->height + u].content = 'X';
+				tab[i * rules->height + u].content = "bomb.jpg";
 			}
 
 			//shows the adequate content in the correspopnding color if it has been discovered via dig
@@ -302,7 +360,8 @@ void displayGrid(struct box* tab, struct gameSettings* rules, int endDisplay)
 			}
 
 		}
-	}
+	}*/
+	SDL_RenderPresent(renderer);
 }
 
 //FUNCTIONS FOR OPTIMIZATION
@@ -343,28 +402,13 @@ char actionQuery()
 }
 
 //the gameplay loop that will be repeated as long as the game is not over
-void gamePlay(struct box* tab, struct gameSettings* rules)
+void gamePlay(struct box* tab, struct gameSettings* rules, SDL_Renderer* renderer, SDL_Window* window)
 {
-	//creates a window and a render
-	SDL_Window* gameWin = SDL_CreateWindow("MineSweeper", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, rules->width * 32, rules->height * 32 + 64, 0);
-	SDL_Renderer* gameRender = SDL_CreateRenderer(gameWin, -1, 0);
+	SDL_Event event;
 
 	//makes a teal background
-	SDL_SetRenderDrawColor(gameRender, 0, 128, 128, 255);
-	SDL_RenderClear(gameRender);
-	SDL_RenderPresent(gameRender);
-	//Makes a basic play area/info bar
-	for (int i = 0; i < rules->height * rules->width; i++)
-	{
-		SDL_Surface* image = IMG_Load(tab[i].content);
-		SDL_Texture* readyImage = SDL_CreateTextureFromSurface(gameRender, image);
-		SDL_Rect position;
-		position.x = 100;
-		position.y = 200;
-		SDL_QueryTexture(readyImage, NULL, NULL, &position.w, &position.h);
-		SDL_RenderCopy(gameRender, readyImage, NULL, &position);
-		SDL_RenderPresent(gameRender);
-	}
+	SDL_SetRenderDrawColor(renderer, 0, 128, 128, 255);
+	SDL_RenderClear(renderer);
 
 	//checks if any game-ending condition has been met (losing/winning) every turn
 	while (rules->isGameDone == 0)
@@ -378,9 +422,29 @@ void gamePlay(struct box* tab, struct gameSettings* rules)
 		{
 			system("cls");
 			//Show the current state of the minefield
-			displayGrid(tab, rules, 0);
+			displayGrid(tab, rules, renderer, 0);
 			printf("\nflags left:%d, unopened boxes:%d", rules->flags, rules->unopenedBoxes);
 			//Take in the coordinates of the next box the player will act upon
+			SDL_WaitEvent(&event);
+			switch (event.type) 
+			{
+			case SDL_QUIT:
+				SDL_DestroyRenderer(renderer);
+				SDL_DestroyWindow(window);
+				SDL_Quit();
+				rules->isGameDone = 1;
+				break;
+
+			case SDL_MOUSEBUTTONDOWN:
+
+				if (event.button.button == SDL_BUTTON_LEFT) {
+					printf("Au moins un clic gauche\n");
+				}
+				break;
+			}
+
+
+			/*
 			int X = numQuery("column", "play with", rules->width);
 			int Y = numQuery("line", "play with", rules->height);
 
@@ -401,9 +465,10 @@ void gamePlay(struct box* tab, struct gameSettings* rules)
 			{
 				flag(tab, X, Y, rules);
 
-			}
+			}*/
 		}
 	}
+
 }
 
 //"AFTER THE GAME" FUNCTIONS
@@ -521,7 +586,7 @@ int * startScreen()
 			//break window, renderer and return values
 	}
 */
-	SDL_Delay(8000);
+	SDL_Delay(1000);
 	SDL_DestroyWindow(startWin);
 	SDL_DestroyRenderer(startRender);
 	return gameValues;
@@ -550,21 +615,27 @@ int main() {
 		bombPlacing(tab, &rules);
 		bombRadar(tab, &rules);
 
+		//creates a window and a renderer for the game
+		SDL_Window* gameWin = SDL_CreateWindow("MineSweeper", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (rules.width+1) * 32 , rules.height * 32 + 96, 0);
+		SDL_Renderer* gameRender = SDL_CreateRenderer(gameWin, -1, 0);
+
 		//gameplay loop of interacting with the grid, also makes a playable window for the user
-		gamePlay(tab, &rules);
+		gamePlay(tab, &rules, gameRender, gameWin);
 
 		//when game ends, tell if player won or lose
 		system("cls");
 		gameEnd(tab, &rules);
 		//show the grid with mines revealed
-		displayGrid(tab, &rules, 1);
+		displayGrid(tab, &rules, gameRender, 1);
 
 		//freeing the allocated memory of the grid
 		free(tab);
 		//ask player if they want to play again
-		playing = playAgain();
+		if (rules.isGameDone < 2)
+		{
+			playing = playAgain();
+		}
 	}
-
 	return 0;
 }
 
@@ -582,15 +653,6 @@ void handleEvents() {
 	default:
 		break;
 	}
-}
-
-//simple render function
-void render() {
-	SDL_SetRenderDrawColor(renderer, 121, 121, 121, 255);
-	SDL_RenderClear(renderer);
-
-	//your stuff to render would typically go here.
-	SDL_RenderPresent(renderer);
 }
 
 //simple update function

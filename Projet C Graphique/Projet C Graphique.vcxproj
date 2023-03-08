@@ -137,7 +137,7 @@
   <ItemGroup>
     <Image Include="arrHor.png" />
     <Image Include="arrVert.png" />
-    <Image Include="bomb.png" />
+    <Image Include="bomb.jpg" />
     <Image Include="darkGrass.jpg" />
     <Image Include="flag.jpg" />
     <Image Include="grass.jpg" />

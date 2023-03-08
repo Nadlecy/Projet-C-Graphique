@@ -29,9 +29,6 @@
     <Image Include="arrVert.png">
       <Filter>Fichiers sources</Filter>
     </Image>
-    <Image Include="bomb.png">
-      <Filter>Fichiers sources</Filter>
-    </Image>
     <Image Include="darkGrass.jpg">
       <Filter>Fichiers sources</Filter>
     </Image>
@@ -42,6 +39,9 @@
       <Filter>Fichiers sources</Filter>
     </Image>
     <Image Include="grass.jpg">
+      <Filter>Fichiers sources</Filter>
+    </Image>
+    <Image Include="bomb.jpg">
       <Filter>Fichiers sources</Filter>
     </Image>
   </ItemGroup>
