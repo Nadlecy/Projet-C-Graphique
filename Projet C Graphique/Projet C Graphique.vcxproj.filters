@@ -44,6 +44,30 @@
     <Image Include="bomb.jpg">
       <Filter>Fichiers sources</Filter>
     </Image>
+    <Image Include="nearBomb1.jpg">
+      <Filter>Fichiers sources</Filter>
+    </Image>
+    <Image Include="nearBomb2.jpg">
+      <Filter>Fichiers sources</Filter>
+    </Image>
+    <Image Include="nearBomb3.jpg">
+      <Filter>Fichiers sources</Filter>
+    </Image>
+    <Image Include="nearBomb4.jpg">
+      <Filter>Fichiers sources</Filter>
+    </Image>
+    <Image Include="nearBomb5.jpg">
+      <Filter>Fichiers sources</Filter>
+    </Image>
+    <Image Include="nearBomb6.jpg">
+      <Filter>Fichiers sources</Filter>
+    </Image>
+    <Image Include="nearBomb7.jpg">
+      <Filter>Fichiers sources</Filter>
+    </Image>
+    <Image Include="nearBomb8.jpg">
+      <Filter>Fichiers sources</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Font Include="comic-sans-ms_fr.ttf">

@@ -104,12 +104,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\bcleymand\Documents\SDL2-2.26.3\include;C:\Users\bcleymand\Documents\SDL2_image-2.6.3\include;C:\Users\bcleymand\Documents\SDL2_ttf-2.20.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\vfovet\Documents\SDL2-2.26.3\include;C:\Users\vfovet\Documents\SDL2_image-2.6.3\include;C:\Users\vfovet\Documents\SDL2_ttf-2.20.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\bcleymand\Documents\SDL2_ttf-2.20.2\lib\x64;C:\Users\bcleymand\Documents\SDL2-2.26.3\lib\x64;C:\Users\bcleymand\Documents\SDL2_image-2.6.3\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\vfovet\Documents\SDL2_ttf-2.20.2\lib\x64;C:\Users\vfovet\Documents\SDL2-2.26.3\lib\x64;C:\Users\vfovet\Documents\SDL2_image-2.6.3\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2_ttf.lib;SDL2_image.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -141,6 +141,14 @@
     <Image Include="darkGrass.jpg" />
     <Image Include="flag.jpg" />
     <Image Include="grass.jpg" />
+    <Image Include="nearBomb1.jpg" />
+    <Image Include="nearBomb2.jpg" />
+    <Image Include="nearBomb3.jpg" />
+    <Image Include="nearBomb4.jpg" />
+    <Image Include="nearBomb5.jpg" />
+    <Image Include="nearBomb6.jpg" />
+    <Image Include="nearBomb7.jpg" />
+    <Image Include="nearBomb8.jpg" />
     <Image Include="question.jpg" />
   </ItemGroup>
   <ItemGroup>

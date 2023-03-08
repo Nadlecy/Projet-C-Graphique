@@ -181,9 +181,10 @@ void dig(struct box* tab, int X, int Y, struct gameSettings* rules)
 			//if there is one (or more) bomb(s) near the tile 
 			if ((tab[X - 1 + rules->width * (Y - 1)].nearbyBombs))
 			{
-				char newDisplay[14];
+				char newDisplay[15];
 				//transforms the nearbyBombs pointer (int) into a string 
-				sprintf_s(newDisplay, 14, "nearBomb%d.jpg", tab[X - 1 + rules->width * (Y - 1)].nearbyBombs);
+				sprintf_s(newDisplay, 15, "nearBomb%d.jpg", tab[X - 1 + rules->width * (Y - 1)].nearbyBombs);
+				printf(newDisplay);
 				tab[X - 1 + rules->width * (Y - 1)].content = newDisplay;
 				//removes a number from the unopened boxes, because we just opened one
 				rules->unopenedBoxes--;
@@ -215,7 +216,7 @@ void dig(struct box* tab, int X, int Y, struct gameSettings* rules)
 //puts or removes flags and question marks on boxes
 void flag(struct box* tab, int X, int Y, struct gameSettings* rules)
 {
-	if (X > 0 && X < rules->width + 1 && Y>0 && Y < rules->height + 1)
+	if (X > 0 && X < rules->width + 1 && Y>0 && Y < rules->height + 1 && rules->flags >0)
 	{
 		//if the box is empty
 		if (tab[X - 1 + rules->width * (Y - 1)].content == "darkGrass.jpg")
@@ -438,7 +439,18 @@ void gamePlay(struct box* tab, struct gameSettings* rules, SDL_Renderer* rendere
 			case SDL_MOUSEBUTTONDOWN:
 
 				if (event.button.button == SDL_BUTTON_LEFT) {
-					printf("Au moins un clic gauche\n");
+					//printf("Au moins un clic gauche\nX coord : %d\nY coord : %d\n",event.button.x,event.button.y);
+					int X = (event.button.x - 16)/32 + 1;
+					int Y = (event.button.y - 16)/32 + 1;
+					printf("\nLEFT !\nX final coord : %d\nY final coord : %d",X,Y);
+					dig(tab, X, Y, rules);
+				}
+				if (event.button.button == SDL_BUTTON_RIGHT) {
+					//printf("Au moins un clic droit\nX coord : %d\nY coord : %d\n",event.button.x,event.button.y);
+					int X = (event.button.x - 16) / 32 + 1;
+					int Y = (event.button.y - 16) / 32 + 1;
+					printf("\n RIGHT !\nX final coord : %d\nY final coord : %d", X, Y);
+					flag(tab, X, Y, rules);
 				}
 				break;
 			}
@@ -574,7 +586,8 @@ int * startScreen()
 		printf("foirage à l'ouverture de times.ttf");
 	}
 
-	TTF_Quit();*/
+	TTF_Quit();
+	*/
 	SDL_RenderPresent(startRender);
 	/*
 	while (isRunning)
@@ -585,7 +598,7 @@ int * startScreen()
 		//if <button> is clicked and EVERYTHING is set
 			//break window, renderer and return values
 	}
-*/
+	*/
 	SDL_Delay(1000);
 	SDL_DestroyWindow(startWin);
 	SDL_DestroyRenderer(startRender);
@@ -625,6 +638,7 @@ int main() {
 		//when game ends, tell if player won or lose
 		system("cls");
 		gameEnd(tab, &rules);
+		
 		//show the grid with mines revealed
 		displayGrid(tab, &rules, gameRender, 1);
 
@@ -635,6 +649,8 @@ int main() {
 		{
 			playing = playAgain();
 		}
+		SDL_DestroyRenderer(gameRender);
+		SDL_DestroyWindow(gameWin);
 	}
 	return 0;
 }
