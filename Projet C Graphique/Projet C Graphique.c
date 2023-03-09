@@ -10,6 +10,7 @@ typedef int bool;
 #define false 0
 bool isRunning;
 
+
 struct box
 {
 	char * content;
@@ -26,13 +27,52 @@ struct gameSettings
 	int flags;
 	int unopenedBoxes;
 	int isGameDone;
+	char* indexTexture[13];
 };
 
 //SETUP FUNCTIONS
-//fills an empty grid with empty boxes, with the same dimensions as the player input
-void initialize(struct box* tab, struct gameSettings* rules)
+//sets a pre-made 
+void Texturize(SDL_Renderer* renderer, struct gameSettings* rules, char* path, int index)
 {
-	struct box element = { "darkGrass.jpg", 0, 0 };
+	SDL_Surface* image;
+	image = IMG_Load(path);
+	SDL_Texture* oneImage = SDL_CreateTextureFromSurface(renderer, image);
+	rules->indexTexture[index] = oneImage;
+}
+
+//fills an empty grid with empty boxes, with the same dimensions as the player input
+void initialize(struct box* tab, struct gameSettings* rules, SDL_Renderer* renderer)
+{
+	SDL_Surface* image;
+	char* newLink[14];
+	for (int j = 0; j <= 12; j++)
+	{
+		switch (j)
+		{
+		case 0:
+			Texturize(renderer, rules, "darkGrass.jpg", j);
+			break;
+		case 9:
+			Texturize(renderer, rules, "flag.jpg", j);
+			break;
+		case 10:
+			Texturize(renderer, rules, "question.jpg", j);
+			break;
+		case 11:
+			Texturize(renderer, rules, "bomb.jpg", j);
+			break;
+		case 12:
+			Texturize(renderer, rules, "grass.jpg", j);
+			break;
+		default:
+			sprintf_s(newLink, 14, "nearBomb%d.jpg", j);
+
+			Texturize(renderer, rules, newLink, j);
+			printf("%s", rules->indexTexture[j]);
+			break;
+		}
+	}
+	struct box element = { rules->indexTexture[0], 0, 0};
 	for (int i = 0; i < rules->height; i++)
 	{
 		for (int u = 0; u < rules->width; u++)
@@ -166,7 +206,7 @@ void bombRadar(struct box* tab, struct gameSettings* rules)
 void dig(struct box* tab, int X, int Y, struct gameSettings* rules)
 {
 	// ckeck if there is a flag already placed or not on the tile
-	if (X > 0 && X < rules->height + 1 && Y>0 && Y < rules->width + 1 && tab[X - 1 + rules->width * (Y - 1)].content != "flag.jpg")
+	if (X > 0 && X < rules->height + 1 && Y>0 && Y < rules->width + 1 && tab[X - 1 + rules->width * (Y - 1)].content != rules->indexTexture[9])
 	{
 		//if there is a bomb on the tile
 		if (tab[X - 1 + rules->width * (Y - 1)].isBomb)
@@ -176,16 +216,13 @@ void dig(struct box* tab, int X, int Y, struct gameSettings* rules)
 
 		}
 		//if the tile has not yet been revealed
-		else if (tab[X - 1 + rules->width * (Y - 1)].content == "darkGrass.jpg")
+		else if (tab[X - 1 + rules->width * (Y - 1)].content == rules->indexTexture[0])
 		{
 			//if there is one (or more) bomb(s) near the tile 
 			if ((tab[X - 1 + rules->width * (Y - 1)].nearbyBombs))
 			{
-				char newDisplay[15];
 				//transforms the nearbyBombs pointer (int) into a string 
-				sprintf_s(newDisplay, 15, "nearBomb%d.jpg", tab[X - 1 + rules->width * (Y - 1)].nearbyBombs);
-				printf(newDisplay);
-				tab[X - 1 + rules->width * (Y - 1)].content = newDisplay;
+				tab[X - 1 + rules->width * (Y - 1)].content = rules->indexTexture[tab[X - 1 + rules->width * (Y - 1)].nearbyBombs];
 				//removes a number from the unopened boxes, because we just opened one
 				rules->unopenedBoxes--;
 			}
@@ -193,7 +230,7 @@ void dig(struct box* tab, int X, int Y, struct gameSettings* rules)
 			else
 			{
 				rules->unopenedBoxes--;
-				tab[X - 1 + rules->width * (Y - 1)].content = "grass.jpg";
+				tab[X - 1 + rules->width * (Y - 1)].content = rules->indexTexture[12];
 				dig(tab, X - 1, Y, rules); //left
 				dig(tab, X + 1, Y, rules); //right
 				dig(tab, X - 1, Y + 1, rules); //down left
@@ -206,39 +243,34 @@ void dig(struct box* tab, int X, int Y, struct gameSettings* rules)
 			}
 		}
 	}
-	//tell the player if the area they're trying to dig is flagged
-	else if (X > 0 && X < rules->height + 1 && Y>0 && Y < rules->width + 1 && tab[X - 1 + rules->width * (Y - 1)].content == "flag.jpg")
-	{
-		printf("\nCan't dig a flagged area !");
-	}
 }
 
 //puts or removes flags and question marks on boxes
 void flag(struct box* tab, int X, int Y, struct gameSettings* rules)
 {
-	if (X > 0 && X < rules->width + 1 && Y>0 && Y < rules->height + 1 && rules->flags >0)
+	if (X > 0 && X < rules->width + 1 && Y>0 && Y < rules->height + 1)
 	{
 		//if the box is empty
-		if (tab[X - 1 + rules->width * (Y - 1)].content == "darkGrass.jpg")
+		if (tab[X - 1 + rules->width * (Y - 1)].content == rules->indexTexture[0])
 		{
 			//add a flag
-			tab[X - 1 + rules->width * (Y - 1)].content = "flag.jpg";
+			tab[X - 1 + rules->width * (Y - 1)].content = rules->indexTexture[9];
 			//decrease how many flags left the player has to put
 			rules->flags--;
 		}
 		//if the box has a flag
-		else if (tab[X - 1 + rules->width * (Y - 1)].content == "flag.jpg")
+		else if (tab[X - 1 + rules->width * (Y - 1)].content == rules->indexTexture[9])
 		{
 			//replace the flag by a question mark
-			tab[X - 1 + rules->width * (Y - 1)].content = "question.jpg";
+			tab[X - 1 + rules->width * (Y - 1)].content = rules->indexTexture[10];
 			//increase how many flags left the player has to put 
 			rules->flags++;
 		}
 		//if the box has a question mark
-		else if (tab[X - 1 + rules->width * (Y - 1)].content == "question.jpg")
+		else if (tab[X - 1 + rules->width * (Y - 1)].content == rules->indexTexture[10])
 		{
 			//empty the box
-			tab[X - 1 + rules->width * (Y - 1)].content = "darkGrass.jpg";
+			tab[X - 1 + rules->width * (Y - 1)].content = rules->indexTexture[0];
 		}
 	}
 }
@@ -247,7 +279,8 @@ void flag(struct box* tab, int X, int Y, struct gameSettings* rules)
 //gives a visual representation of the minefield
 void displayGrid(struct box* tab, struct gameSettings* rules,SDL_Renderer* renderer, int endDisplay)
 {
-
+	SDL_SetRenderDrawColor(renderer, 0, 128, 128, 255);
+	SDL_RenderClear(renderer);
 	//Makes a basic play area/info bar
 	SDL_Rect position;
 	SDL_Surface* image;
@@ -256,152 +289,67 @@ void displayGrid(struct box* tab, struct gameSettings* rules,SDL_Renderer* rende
 		//if the game has ended and the box contains a mine, reveal the mine
 		if (tab[i].isBomb && endDisplay)
 		{
-			image = IMG_Load("bomb.jpg");
+			tab[i].content = rules->indexTexture[11];
 		}
-		else
-		{
-			image = IMG_Load(tab[i].content);
-		}
-		SDL_Texture* readyImage = SDL_CreateTextureFromSurface(renderer, image);
+
 		position.x = (i % rules->width) * 32 + 16 ;//the horizontal position
 		position.y = ((i - (i % rules->width)) / rules->height) * 32 + 16; //the vertical position
-		SDL_QueryTexture(readyImage, NULL, NULL, &position.w, &position.h);
-		SDL_RenderCopy(renderer, readyImage, NULL, &position);
+		SDL_QueryTexture(tab[i].content, NULL, NULL, &position.w, &position.h);
+		SDL_RenderCopy(renderer, tab[i].content, NULL, &position);
 	}
 
-	SDL_Rect flagInfo;
-	flagInfo.x = 16;
-	flagInfo.y = rules->height * 32 + 32;
-	image = IMG_Load("flag.jpg");
-	SDL_Texture* readyImage = SDL_CreateTextureFromSurface(renderer, image);
-	SDL_QueryTexture(readyImage, NULL, NULL, &flagInfo.w, &flagInfo.h);
-	SDL_RenderCopy(renderer, readyImage, NULL, &flagInfo);
-	SDL_Rect flagTextInfo;
-	flagTextInfo.x = flagInfo.w + 16;
-	flagTextInfo.y = flagInfo.y; 
-	char newDisplay[25];
-	//transforms the nearbyBombs pointer (int) into a string 
-	sprintf_s(newDisplay, 25, "Flags left to place : %d", rules->flags);
-	printf(newDisplay);
-	char* text = newDisplay;
-	TTF_Init();
-	TTF_Font* font = NULL;
-	font = TTF_OpenFont("font/comic-sans-ms_fr.ttf", 12);
-
-	if (font != 0) {
-		SDL_Color noir = { 0, 0, 0 }; //attention ce n'est pas un Uint32
-		SDL_Surface* textSurf = TTF_RenderText_Blended(font, text, noir);
-
-
-		if (textSurf == NULL) {
-			printf("Ton texte il est NULL mec.");
-			TTF_CloseFont(font);
-			TTF_Quit();
-		}
-
-		SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, textSurf);
-		if (texture == NULL) {
-			printf("Ta texture elle est NULL mec.");
-			TTF_CloseFont(font);
-			TTF_Quit();
-		}
-		SDL_QueryTexture(texture, NULL, NULL, &flagTextInfo.w, &flagTextInfo.h);
-		SDL_RenderCopy(renderer, texture, NULL, &flagTextInfo);
+	if (endDisplay == 0)
+	{
+		SDL_Rect flagInfo;
+		flagInfo.x = 16;
+		flagInfo.y = rules->height * 32 + 32;;
+		SDL_QueryTexture(rules->indexTexture[9], NULL, NULL, &flagInfo.w, &flagInfo.h);
+		SDL_RenderCopy(renderer, rules->indexTexture[9], NULL, &flagInfo);
 		
-		printf("\n");
-	}
-	else 
-	{
-		printf("mange tes morts mek.");
-	}
-	/*
-	//puts a number indicator for each column
-	for (int o = 0; o < rules->width + 1; o++)
-	{
-		//maintains the width of the shown string so that double digit numbers don't mess up the display
-		if (o < 10)
-		{
-			printf(" %d ", o);
-		}
-		else
-		{
-			printf(" %d", o);
-		}
-	}
-	//displaying each line
-	for (int i = 0; i < rules->height; i++)
-	{
-		//starting with a number, same method as previously but only once per line
-		if (i < 9)
-		{
-			printf("\n %d ", i + 1);
-		}
-		else
-		{
-			printf("\n %d", i + 1);
-		}
-		//displaying each box of the line
-		for (int u = 0; u < rules->width; u++)
-		{
-			//if the game has ended and the box contains a mine, reveal the mine as an X
-			if (tab[i * rules->height + u].isBomb && endDisplay)
-			{
-				tab[i * rules->height + u].content = "bomb.jpg";
-			}
+		//creating rectangle for the texture
+		SDL_Rect flagTextInfo;
+		flagTextInfo.x = flagInfo.w + 16;
+		flagTextInfo.y = flagInfo.y; 
+		
+		//creating the text to implent in the window
+		char newDisplay[25];
+		//transforms the nearbyBombs pointer (int) into a string 
+		sprintf_s(newDisplay, 25, "Flags left to place : %d", rules->flags);
+		char* text = newDisplay;
+		TTF_Init();
+		TTF_Font* font = NULL;
+		font = TTF_OpenFont("font/comic-sans-ms_fr.ttf", 12);
+	
+		if (font != 0) {
+			SDL_Color black = { 0, 0, 0 }; 
+			SDL_Surface* textSurf = TTF_RenderText_Blended(font, text, black);
 
-			//shows the adequate content in the correspopnding color if it has been discovered via dig
-			if (tab[i * rules->height + u].content != ' ' && tab[i * rules->height + u].content != "flag.jpg" && tab[i * rules->height + u].content != '?')
-			{
-				printf("%s""[%c]\x1b[0m", tab[i * rules->height + u].color, tab[i * rules->height + u].content);
-			}
-			//otherwise just show its content with no color
-			else
-			{
-				printf("[%c]", tab[i * rules->height + u].content);
-			}
 
+			if (textSurf == NULL) {
+				printf("Text is NULL");
+				TTF_CloseFont(font);
+				TTF_Quit();
+			}
+			SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, textSurf);
+			if (texture == NULL) {
+				printf("Texture is NULL");
+				TTF_CloseFont(font);
+				TTF_Quit();
+			}
+			SDL_QueryTexture(texture, NULL, NULL, &flagTextInfo.w, &flagTextInfo.h);
+			SDL_RenderCopy(renderer, texture, NULL, &flagTextInfo);
+		
+			printf("\n");
 		}
-	}*/
+		else 
+		{
+			printf("Font error");
+		}
+	}
 	SDL_RenderPresent(renderer);
 }
 
 //FUNCTIONS FOR OPTIMIZATION
-//returns the number entered by the user after a custom query
-int numQuery(char* numberIs, char* numberPurpose, int numberLimit)
-{
-	int Z = 0;
-	while (Z <= 0 || Z > numberLimit)
-	{
-		printf("\nPlease choose a valid %s you would like to %s : ", numberIs, numberPurpose);
-		scanf_s("%d", &Z);
-		if (Z <= 0 || Z > numberLimit)
-		{
-			printf("\nThis %s isn't valid...", numberIs);
-			while (getchar() != '\n');
-		}
-	}
-	return Z;
-}
-
-//returns a character entered by the user after a query
-char actionQuery()
-{
-	char ans = ' ';
-	while (ans != 'D' && ans != 'd' && ans != 'F' && ans != 'f')
-	{
-		//asking the user what to do, dig or put a flag on the tile
-		printf("\nWhat would you like to do here ? Dig or place a Flag (D/F): ");
-		scanf_s("%c", &ans, 1);
-		if (ans != 'D' && ans != 'd' && ans != 'F' && ans != 'f')
-		{
-			//if the answer is not valid, then we can't do anything, so we raise an error then
-			printf("\nYou cannot do this here...");
-			while (getchar() != '\n');
-		}
-	}
-	return ans;
-}
-
 //the gameplay loop that will be repeated as long as the game is not over
 void gamePlay(struct box* tab, struct gameSettings* rules, SDL_Renderer* renderer, SDL_Window* window)
 {
@@ -424,7 +372,6 @@ void gamePlay(struct box* tab, struct gameSettings* rules, SDL_Renderer* rendere
 			system("cls");
 			//Show the current state of the minefield
 			displayGrid(tab, rules, renderer, 0);
-			printf("\nflags left:%d, unopened boxes:%d", rules->flags, rules->unopenedBoxes);
 			//Take in the coordinates of the next box the player will act upon
 			SDL_WaitEvent(&event);
 			switch (event.type) 
@@ -454,30 +401,6 @@ void gamePlay(struct box* tab, struct gameSettings* rules, SDL_Renderer* rendere
 				}
 				break;
 			}
-
-
-			/*
-			int X = numQuery("column", "play with", rules->width);
-			int Y = numQuery("line", "play with", rules->height);
-
-			//Emptying the stdin
-			while (getchar() != '\n');
-			//Selecting the next action to take
-			char action = actionQuery();
-
-			//Emptying the stdin again
-			while (getchar() != '\n');
-
-			//comitting the chosen action
-			if (action == 'D' || action == 'd')
-			{
-				dig(tab, X, Y, rules);
-			}
-			else
-			{
-				flag(tab, X, Y, rules);
-
-			}*/
 		}
 	}
 
@@ -500,137 +423,110 @@ void gameEnd(struct box* tab, struct gameSettings* rules)
 }
 
 //asks the player if they want to do another game
-int playAgain() {
-	char ans = ' ';
-	while (ans != 'Y' && ans != 'y' && ans != 'N' && ans != 'n')
-	{
-		//asking the user if they want to play again
-		printf("\nWould you like to play again ? (Y/N)\n");
-		scanf_s("%c", &ans, 1);
-		if (ans != 'Y' && ans != 'y' && ans != 'N' && ans != 'n')
+int playAgain(struct gameSettings* rules, SDL_Renderer* renderer, SDL_Window* window)
+{
+	SDL_Event event;
+	int awaitingChoice = 1;
+
+	SDL_Rect winLoseText;
+	winLoseText.x = 16;
+	winLoseText.y = rules->height * 32 + 16;
+	TTF_Init();
+	char* text;
+	
+	TTF_Font* font = NULL;
+	font = TTF_OpenFont("font/comic-sans-ms_fr.ttf", 16);
+
+	if (font != 0) {
+		if (rules->unopenedBoxes == 0)
 		{
-			//if the answer is incorrect, then we raise an error
-			printf("\nThat is not a valid answer.");
-			while (getchar() != '\n');
+			//winning condition : all boxes have been opened
+			text = "                         You Win !                      Left Click to Play Again                         Right Click to leave the game";
 		}
+		else
+		{
+			//if you landed on a bomb before opening every box, well you lose 
+			text = "                         You Lose !                     Left Click to Play Again                         Right Click to leave the game";
+		}
+		SDL_Color black = { 0, 0, 0 };
+		SDL_Surface* textSurf = TTF_RenderText_Blended_Wrapped(font, text, black, 320);
+
+		if (textSurf == NULL) {
+			printf("Text is NULL");
+			TTF_CloseFont(font);
+			TTF_Quit();
+		}
+		SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, textSurf);
+		if (texture == NULL) {
+			printf("Texture is NULL");
+			TTF_CloseFont(font);
+			TTF_Quit();
+		}
+		SDL_QueryTexture(texture, NULL, NULL, &winLoseText.w, &winLoseText.h);
+		SDL_RenderCopy(renderer, texture, NULL, &winLoseText);
 	}
-	if (ans == 'Y' || ans == 'y')
+	else
 	{
-		//if they want to play again, then they play again
-		return 1;
+		printf("Font error");
 	}
-	else if (ans == 'N' || ans == 'n')
+	SDL_RenderPresent(renderer);
+
+	while (awaitingChoice)
 	{
-		//if not, the game ends here
-		return 0;
+		//Take in the coordinates of the player's click
+		SDL_WaitEvent(&event);
+		switch (event.type)
+		{
+		case SDL_QUIT:
+			SDL_DestroyRenderer(renderer);
+			SDL_DestroyWindow(window);
+			SDL_Quit();
+			break;
+
+		case SDL_MOUSEBUTTONDOWN:
+
+			if (event.button.button == SDL_BUTTON_LEFT) {
+				return 1;
+			}
+			if (event.button.button == SDL_BUTTON_RIGHT) {
+				return 0;
+			}
+			break;
+		}
 	}
 }
 
 //VISUAL FUNCTIONS
-
-//text box
-
-//difficulty/intro window
-int * startScreen()
-{
-
-	SDL_Window* startWin = SDL_CreateWindow("MineSweeper", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 500, 300, 0);
-	SDL_Renderer* startRender = SDL_CreateRenderer(startWin,-1, 0);
-	if (startRender) {
-		SDL_SetRenderDrawColor(startRender, 0, 128, 128, 255);
-		SDL_RenderClear(startRender);
-		printf("Renderer created!\n");
-		isRunning = true;
-	}
-
-	int gameValues[3];
-	for (int i = 0; i < 3; i++)
-	{
-		gameValues[i] = 10;
-	}
-
-	SDL_Rect startRects[1];
-	for (int i = 0; i < 6; i++)
-	{
-		if (i % 2)
-		{
-			SDL_SetRenderDrawColor(startRender, 195, 195, 195, 255);
-			startRects[0].h = 70;
-			startRects[0].x = 40 + (i - 1) / 2  * 175;
-			startRects[0].y = 70;
-
-		}
-		else 
-		{
-			SDL_SetRenderDrawColor(startRender, 129, 129, 129, 255);
-			startRects[0].h = 130;
-			startRects[0].y = 40;
-			startRects[0].x = 40 + i/2 * 175;
-		}
-		startRects[0].w = 70;
-		SDL_RenderFillRect(startRender, startRects);
-	}
-	//TTF_Init();
-	//TTF_Font* font = NULL;
-	//font = TTF_OpenFont("comic-sans-ms_fr.ttf", 12);
-	/*
-	if (font != 0) {
-		SDL_Color noir = { 0, 0, 0, 255 }; //attention ce n'est pas un Uint32
-		SDL_Surface* texte = TTF_RenderText_Blended(font, "coucou", noir);
-		//affichage
-		SDL_FreeSurface(texte); //On oublie toujours pas
-		TTF_CloseFont(font);
-	}
-	else 
-	{ 
-		printf("foirage à l'ouverture de times.ttf");
-	}
-
-	TTF_Quit();
-	*/
-	SDL_RenderPresent(startRender);
-	/*
-	while (isRunning)
-	{
-		//get info for width (xSize)
-		//get info for height (ySize)
-		//get info for bomb number
-		//if <button> is clicked and EVERYTHING is set
-			//break window, renderer and return values
-	}
-	*/
-	SDL_Delay(1000);
-	SDL_DestroyWindow(startWin);
-	SDL_DestroyRenderer(startRender);
-	return gameValues;
-}
-
-
 //main operating function, runs the whole program
 int main() {
 
 	int playing = 1;
 	while (playing)
 	{
-		int * inputValues = startScreen();
+		int * gameValues[3];
+		for (int i = 0; i < 3; i++)
+		{
+			gameValues[i] = 10;
+		}
 		//setting the grid size
-		int xSize = inputValues[0];
-		int ySize = inputValues[1];
+		int xSize = gameValues[0];
+		int ySize = gameValues[1];
 		//setting the number of bombs in the grid
-		int bombs = inputValues[2];
+		int bombs = gameValues[2];
 
 		//creating the rules based on the previous inputs
 		struct gameSettings rules = { xSize, ySize, bombs, bombs, xSize * ySize - bombs, 0 };
 		//beginning of game
 		//memory allocation for the grid called tab
 		struct box* tab = (struct box*)malloc(sizeof(struct box) * rules.width * rules.height);
-		initialize(tab, &rules);
+		//creates a window and a renderer for the game
+		SDL_Window* gameWin = SDL_CreateWindow("MineSweeper", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (rules.width + 1) * 32, rules.height * 32 + 96, 0);
+		SDL_Renderer* gameRender = SDL_CreateRenderer(gameWin, -1, 0);
+
+		initialize(tab, &rules, gameRender);
 		bombPlacing(tab, &rules);
 		bombRadar(tab, &rules);
 
-		//creates a window and a renderer for the game
-		SDL_Window* gameWin = SDL_CreateWindow("MineSweeper", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (rules.width+1) * 32 , rules.height * 32 + 96, 0);
-		SDL_Renderer* gameRender = SDL_CreateRenderer(gameWin, -1, 0);
 
 		//gameplay loop of interacting with the grid, also makes a playable window for the user
 		gamePlay(tab, &rules, gameRender, gameWin);
@@ -645,10 +541,8 @@ int main() {
 		//freeing the allocated memory of the grid
 		free(tab);
 		//ask player if they want to play again
-		if (rules.isGameDone < 2)
-		{
-			playing = playAgain();
-		}
+		playing = playAgain(&rules, gameRender, gameWin);
+		
 		SDL_DestroyRenderer(gameRender);
 		SDL_DestroyWindow(gameWin);
 	}
@@ -669,9 +563,4 @@ void handleEvents() {
 	default:
 		break;
 	}
-}
-
-//simple update function
-void update() {
-	//if things could update the code would go in here.
 }
